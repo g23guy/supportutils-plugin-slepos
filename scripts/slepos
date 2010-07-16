@@ -1,0 +1,69 @@
+#!/bin/bash
+#############################################################
+# Name:        SLEPOS Supportconfig Plugin
+# Description: Gathers important troubleshooting information
+#              about SUSE Linux Enterprise Point of Sale
+# License:     GPLv2
+# Author:      Jason Record (jrecord@novell.com)
+# Modified:    2010 Jul 15
+#############################################################
+
+SVER=0.0.0
+LOG_LINES=0	#0 means include the entire file
+unset FILES
+RCFILE="/opt/supportconfig/resources/scplugin.rc"
+
+[ -s $RCFILE ] && . $RCFILE || { echo "ERROR: Initializing resource file: $RCFILE"; exit 1; }
+
+section_header SLEPOS Supportconfig Plugin, v${SVER}
+pconf_files /etc/slepos-release
+
+#t - Branchserver
+section_header "SLEPOS: Branch Server"
+if rpm -q POS_Server-BranchT &>/dev/null; then
+	plugin_command $OF 'ls -la /srv/SLEPOS/*'
+	plugin_command $OF 'ls -la /srv/tftpboot/*'
+
+	test -d /srv/tftpboot/CR/ && FILES=$(find /srv/tftpboot/CR/ -type f) || unset FILES
+	pconf_files $FILES
+
+	test -d /srv/tftpbot/upload/ && FILES=$(find /srv/tftpboot/upload/ -type f | grep hwtype ) || unset FILES
+	pconf_files $FILES /srv/tftpboot/boot/pxelinux.cfg
+
+	test -d /etc/SLEPOS/ && FILES=$(find /etc/SLEPOS/ -type f| grep -v "/etc/SLEPOS/template/" | grep -v "/etc/SLEPOS/installation.xml") || unset FILES
+	pconf_files $FILES /var/lib/dhcp/db/dhcpd.leases
+else
+	plugin_message "# Not Installed"
+	plugin_message
+fi
+
+# Adminserver
+section_header "SLEPOS: Admin Server"
+if rpm -q POS_Server-Admin3 &>/dev/null; then
+	plugin_command "slapcat -d 0 | sed -e 's/userPassword::.*/userPassword:: REMOVED/g'"
+else
+	plugin_message "# Not Installed"
+	plugin_message
+fi
+
+# Imageserver
+section_header "SLEPOS: Image Server"
+if rpm -q POS_Image3 &>/dev/null; then
+	if [ -d /var/lib/SLEPOS/system/ ]; then 
+		FILES=$(find /var/lib/SLEPOS/system/ -maxdepth 1 -type d | grep -v /var/lib/SLEPOS/system/chroot | grep -v /var/lib/SLEPOS/system/images | grep -v "system\/$") || unset FILES
+		plugin_command $OF "ls -la $FILES"
+	
+		FILES=$(find /var/lib/SLEPOS/system/ -name config.xml)
+		pconf_files $FILES
+
+		FILES=$(find /var/lib/SLEPOS/system/ -name config.sh)
+		pconf_files $FILES
+
+		FILES=$(find /var/lib/SLEPOS/system/ -name images.sh)
+		pconf_files $FILES
+	fi
+else
+	plugin_message "# Not Installed"
+	plugin_message
+fi
+section_header Done
