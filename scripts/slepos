@@ -2,13 +2,13 @@
 #############################################################
 # Name:        SLEPOS Supportconfig Plugin
 # Description: Gathers important troubleshooting information
-#              about SUSE Linux Enterprise Point of Sale
+#              about SUSE Linux Enterprise Point of Service
 # License:     GPLv2
 # Author:      Jason Record (jrecord@novell.com)
-# Modified:    2010 Jul 15
+# Modified:    2010 Jul 17
 #############################################################
 
-SVER=0.0.0
+SVER=1.0.0
 LOG_LINES=0	#0 means include the entire file
 unset FILES
 RCFILE="/opt/supportconfig/resources/scplugin.rc"

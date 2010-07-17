@@ -1,5 +1,5 @@
 #
-# spec file for package supportutils-plugin-slepos (Version 0.0.0)
+# spec file for package supportutils-plugin-slepos (Version 1.0-0)
 #
 # Copyright (C) 2010 Novell, Inc.
 # This file and all modifications and additions to the pristine
@@ -14,8 +14,8 @@ URL:          https://code.google.com/p/supportutils-plugin-slepos/
 License:      GPLv2
 Group:        Documentation/SuSE
 Autoreqprov:  on
-Version:      0.0
-Release:      2
+Version:      1.0
+Release:      0
 Source:       %{name}-%{version}.tar.gz
 Summary:      Supportconfig Plugin for SLEPOS
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
@@ -26,7 +26,7 @@ Requires:     supportconfig-plugin-resource-0.0.1
 Requires:     slepos-release
 
 %description
-Supportconfig plugin for SUSE Linux Enterprise Point of Sale (SLEPOS). 
+Supportconfig plugin for SUSE Linux Enterprise Point of Service (SLEPOS). 
 Plugins extend supportconfig functionality and include the output in 
 the supportconfig tar ball.
 
@@ -40,20 +40,20 @@ Authors:
 %prep
 %setup -q
 %build
-gzip -9f slepos-plugin.5
+gzip -9f slepos-plugin.8
 
 %install
 pwd;ls -la
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/opt/supportconfig/plugins
-install -d $RPM_BUILD_ROOT/usr/share/man/man5
+install -d $RPM_BUILD_ROOT/usr/share/man/man8
 install -m 0400 slepos $RPM_BUILD_ROOT/opt/supportconfig/plugins
-install -m 0644 slepos-plugin.5.gz $RPM_BUILD_ROOT/usr/share/man/man5/slepos-plugin.5.gz
+install -m 0644 slepos-plugin.8.gz $RPM_BUILD_ROOT/usr/share/man/man8/slepos-plugin.8.gz
 
 %files
 %defattr(-,root,root)
 /opt/supportconfig/plugins/*
-/usr/share/man/man5/slepos-plugin.5.gz
+/usr/share/man/man8/slepos-plugin.8.gz
 
 %clean
 rm -rf $RPM_BUILD_ROOT
