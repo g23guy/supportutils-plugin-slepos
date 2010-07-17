@@ -15,7 +15,7 @@ License:      GPLv2
 Group:        Documentation/SuSE
 Autoreqprov:  on
 Version:      0.0
-Release:      1
+Release:      2
 Source:       %{name}-%{version}.tar.gz
 Summary:      Supportconfig Plugin for SLEPOS
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
@@ -23,6 +23,7 @@ BuildArch:    noarch
 Distribution: Novell NTS
 Vendor:       Novell Technical Services
 Requires:     supportconfig-plugin-resource-0.0.1
+Requires:     slepos-release
 
 %description
 Supportconfig plugin for SUSE Linux Enterprise Point of Sale (SLEPOS). 
