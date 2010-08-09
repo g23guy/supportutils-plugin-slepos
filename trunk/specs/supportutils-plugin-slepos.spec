@@ -1,5 +1,5 @@
 #
-# spec file for package supportutils-plugin-slepos (Version 1.0-2)
+# spec file for package supportutils-plugin-slepos (Version 1.0-3)
 #
 # Copyright (C) 2010 Novell, Inc.
 # This file and all modifications and additions to the pristine
@@ -15,7 +15,7 @@ License:      GPLv2
 Group:        Documentation/SuSE
 Autoreqprov:  on
 Version:      1.0
-Release:      2.20100729.PTF.1
+Release:      3
 Source:       %{name}-%{version}.tar.gz
 Summary:      Supportconfig Plugin for SLEPOS
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
