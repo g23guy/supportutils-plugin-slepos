@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Sep 29 11:13:18 MDT 2010 - jrecord@novell.com
+
+-only requires supportconfig-plugin-resource
+
+-------------------------------------------------------------------
 Thu Jul 29 14:54:52 MDT 2010 - schloss@suse.de 
 
 -fixed SLEPOS element collisions
