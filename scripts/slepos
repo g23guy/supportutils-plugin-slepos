@@ -6,13 +6,13 @@
 # License:     GPLv2
 # Author:      Jason Record (jrecord@novell.com)
 #              Thomas Schlosser (schloss@suse.de)
-# Modified:    2010 Jul 29
+# Modified:    2010 Oct 21
 #############################################################
 
-SVER=1.0.3
+SVER=1.0.4
 LOG_LINES=0	#0 means include the entire file
 unset FILES
-RCFILE="/opt/supportconfig/resources/scplugin.rc"
+RCFILE="/usr/lib/supportconfig/resources/scplugin.rc"
 
 [ -s $RCFILE ] && . $RCFILE || { echo "ERROR: Initializing resource file: $RCFILE"; exit 1; }
 

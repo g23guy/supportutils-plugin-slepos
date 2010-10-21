@@ -1,5 +1,5 @@
 #
-# spec file for package supportutils-plugin-slepos (Version 1.0-3)
+# spec file for package supportutils-plugin-slepos (Version 1.0-4)
 #
 # Copyright (C) 2010 Novell, Inc.
 # This file and all modifications and additions to the pristine
@@ -15,7 +15,7 @@ License:      GPLv2
 Group:        Documentation/SuSE
 Autoreqprov:  on
 Version:      1.0
-Release:      4
+Release:      4.20101021.PTF.1
 Source:       %{name}-%{version}.tar.gz
 Summary:      Supportconfig Plugin for SLEPOS
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
@@ -45,14 +45,16 @@ gzip -9f slepos-plugin.8
 %install
 pwd;ls -la
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/opt/supportconfig/plugins
+install -d $RPM_BUILD_ROOT/usr/lib/supportconfig/plugins
 install -d $RPM_BUILD_ROOT/usr/share/man/man8
-install -m 0544 slepos $RPM_BUILD_ROOT/opt/supportconfig/plugins
+install -m 0544 slepos $RPM_BUILD_ROOT/usr/lib/supportconfig/plugins
 install -m 0644 slepos-plugin.8.gz $RPM_BUILD_ROOT/usr/share/man/man8/slepos-plugin.8.gz
 
 %files
 %defattr(-,root,root)
-/opt/supportconfig/plugins/*
+/usr/lib/supportconfig
+/usr/lib/supportconfig/plugins
+/usr/lib/supportconfig/plugins/slepos
 /usr/share/man/man8/slepos-plugin.8.gz
 
 %clean
