@@ -15,7 +15,7 @@ License:      GPLv2
 Group:        Documentation/SuSE
 Autoreqprov:  on
 Version:      1.0
-Release:      4.20101021.PTF.1
+Release:      4.20101025.PTF.1
 Source:       %{name}-%{version}.tar.gz
 Summary:      Supportconfig Plugin for SLEPOS
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
@@ -23,6 +23,7 @@ BuildArch:    noarch
 Distribution: Novell NTS
 Vendor:       Novell Technical Services
 Requires:     supportconfig-plugin-resource
+Requires:     supportconfig-plugin-tag
 Requires:     slepos-release
 
 %description

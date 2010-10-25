@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Oct 21 13:48:32 MDT 2010 - jrecord@novell.com
+Thu Oct 25 13:38:32 MDT 2010 - jrecord@novell.com
 
+-added requires supportconfig-plugin-tag
 -changed /opt/supportconfig to /usr/lib/supportconfig
 
 -------------------------------------------------------------------
