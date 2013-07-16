@@ -15,7 +15,7 @@ License:      GPLv2
 Group:        Documentation/SuSE
 Autoreqprov:  on
 Version:      1.0
-Release:      5
+Release:      8.1
 Source:       %{name}-%{version}.tar.gz
 Summary:      Supportconfig Plugin for SLEPOS
 BuildRoot:    %{_tmppath}/%{name}-%{version}-build
@@ -37,6 +37,7 @@ Please submit bug fixes or comments via:
 Authors:
 --------
     Jason Record <jrecord@novell.com>
+    Thomas Schlosser <schloss@suse.com>	
 
 %prep
 %setup -q
@@ -61,5 +62,20 @@ install -m 0644 slepos-plugin.8.gz $RPM_BUILD_ROOT/usr/share/man/man8/slepos-plu
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%changelog -n supportutils-plugin-slepos
-
+%changelog
+* Thu Jul 04 2013 schloss@suse.com
+-slepos 1.0.8
+-modified for SLEPOS11 SP2
+* Mon Oct 25 2010 jrecord@novell.com
+-added requires supportconfig-plugin-tag
+-changed /opt/supportconfig to /usr/lib/supportconfig
+* Wed Sep 29 2010 jrecord@novell.com
+-only requires supportconfig-plugin-resource
+* Thu Jul 29 2010 schloss@suse.de 
+-fixed SLEPOS element collisions
+-slepos: 1.0.3
+* Mon Jul 19 2010 jrecord@novell.com 
+-updated required supportconfig-plugin-resource version
+-slepos: 1.0.0
+* Sat Jul 17 2010 jrecord@novell.com 
+-initial build

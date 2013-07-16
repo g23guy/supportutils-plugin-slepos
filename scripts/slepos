@@ -1,94 +1,122 @@
-#!/bin/bash
+#!/bin/bash  
 #############################################################
 # Name:        Supportconfig Plugin for SLEPOS
 # Description: Gathers important troubleshooting information
 #              about SUSE Linux Enterprise Point of Service
 # License:     GPLv2
 # Author:      Jason Record (jrecord@novell.com)
-#              Thomas Schlosser (schloss@suse.de)
-# Modified:    2010 Oct 21
+#              Thomas Schlosser (schloss@suse.com)
+# Modified:    2013 Jul 04
 #############################################################
 
-SVER=1.0.4
-LOG_LINES=0	#0 means include the entire file
+SVER=1.0.8
+LOG_LINES=600	#0 means include the entire file
 unset FILES
 RCFILE="/usr/lib/supportconfig/resources/scplugin.rc"
 
 [ -s $RCFILE ] && . $RCFILE || { echo "ERROR: Initializing resource file: $RCFILE"; exit 1; }
 
+BRANCHSERVERCONF="/etc/SLEPOS/branchserver.conf"
+ADMINSERVERCONF="/etc/SLEPOS/adminserver.conf"
+IMGTEMPLATEDIR="/usr/share/kiwi/image/SLEPOS"
+IMGDIR="/var/lib/SLEPOS/"
+BUSYBOX="/usr/bin/busybox"
+
+# Put here the directory of path for the files to captures.
+# use '!' as first character to exclude directories or files
+# If no exclude in the line it must end with a "!"
+# /var/lib/SLEPOS/system!/var/lib/SLEPOS/system/chroot!/var/lib/SLEPOS/system/images!POSsave
+function configFiles() {
+cat << EOBSCF
+/etc/SLEPOS!/etc/SLEPOS/keys!/etc/SLEPOS/template!branchserver.conf!adminserver.conf
+/srv/SLEPOS!
+/srv/tftpboot!
+EOBSCF
+}
+
+# Reads single line in function configFiles()
+# <path>!<exclude>!<exclude> .....
+# Only ASCII, shell, XML files are captures 
+# max size is 10kB 
+function readASCIIFiles() {
+   Path=$(echo $1 |cut -f1 -d!)
+   tmp=$(echo $1 |cut -f2- -d! | sed -e 's/!/\ \-e\ /g')
+   test -n "$tmp" && blkList="-v -e "$tmp || blkList="\/" 
+   test -d $Path -o -f $Path && FILES=$(find $Path -type f -size -10000c | grep $blkList ) || unset FILES
+   for  FILE in $FILES; do
+      file $FILE | grep -e "ASCII text" -e "shell script text" -e "XML"  >/dev/null
+      if [ $? == 0 ]; then
+          pconf_files $FILE
+      fi
+   done
+}
+
+# Main information
 section_header "Supportconfig Plugin for SLEPOS, v${SVER}"
 pconf_files /etc/slepos-release
 
+# SLEPOS RPMs
+plugin_command "rpm -qa | egrep 'yast2-pos-installation|POS|kiwi|admind|yast2-product-creator'"
 
-# Generic
-section_header "SLEPOS: Generic"
-	test -d /etc/SLEPOS/ && FILES=$(find /etc/SLEPOS/ -type f| grep -v "/etc/SLEPOS/template/" | grep -v "/etc/SLEPOS/installation.xml" | grep -v "/etc/SLEPOS/adminserver.conf"| grep -v "/etc/SLEPOS/branchserver.conf") || unset FILES
-	pconf_files $FILES
+# SLEPOS Services
+plugin_command "chkconfig posASWatch"
+plugin_command "chkconfig posleases2ldap"
 
+# Dedecting SLEPOS System (Admin, Branch, Image, POS (busybox))
+plugin_message "#==[ SLEPOS System installed ]===========================#"
 
+if [ -f "$ADMINSERVERCONF" ] && [ -f "$BRANCHSERVERCONF" ]; then
+    plugin_message "Admin/Branch COMBO Server"
 
-# Adminserver
-section_header "SLEPOS: Admin Server"
-if rpm -q POS_Server-Admin3 &>/dev/null; then
-        test -d /srv/SLEPOS/ && \
-	for DIR in $(find . /srv/SLEPOS/ -maxdepth 1| grep -v "\." ); do plugin_command "ls -la $DIR"; done
+elif [ -f "$BRANCHSERVERCONF" ]; then
+    plugin_message "Branch Server"
 
-	if test -f /etc/SLEPOS/adminserver.conf; then
-		plugin_command "sed /etc/SLEPOS/adminserver.conf -e '/^[[:space:]]*#/d' -e '/^$/d' -e 's/POS_ADMIN_PASSWORD.*/POS_ADMIN_PASSWORD=REMOVED/g'" 
-	else
-		plugin_message "#==[ Configuration File ]===========================#"
-		plugin_message "# /etc/SLEPOS/adminserver.conf - File not found"
-		plugin_message
-	fi
+elif [ -f "$ADMINSERVERCONF" ]; then
+    plugin_message "Admin Server"
 
-	plugin_command "slapcat -d 0 | sed -e 's/userPassword::.*/userPassword:: REMOVED/g'"
-else
-	plugin_message "# Not Installed"
-	plugin_message
+elif [ -f "$BUSYBOX" ] ; then
+    plugin_message "Cash Register"
 fi
 
+if [ -d "$IMGTEMPLATEDIR" ]; then
+    plugin_message "Image Server"
+fi
+plugin_message
+plugin_message
 
-
-# Branchserver
-section_header "SLEPOS: Branch Server"
-if rpm -q POS_Server-BranchTools3 &>/dev/null; then 
-
-	test -d /srv/tftpboot/ && \
-	for DIR in $(find . /srv/tftpboot/ -maxdepth 1| grep -v "\." ); do plugin_command "ls -la $DIR"; done
-
-	if test -f /etc/SLEPOS/branchserver.conf; then
-		plugin_command "sed /etc/SLEPOS/branchserver.conf -e '/^[[:space:]]*#/d' -e '/^$/d' -e 's/POS_ADMIN_PASSWORD.*/POS_ADMIN_PASSWORD=REMOVED/g;s/LEASES2LDAP_ADMIN_PW.*/LEASES2LDAP_ADMIN_PW=REMOVED/g' " 
-	else
-		plugin_message "#==[ Configuration File ]===========================#"
-		plugin_message "# /etc/SLEPOS/branchserver.conf - File not found"
-		plugin_message
-	fi
-
-	test -d /srv/tftpboot/CR/ && FILES=$(find /srv/tftpboot/CR/ -type f | grep -v ".tar" ) || unset FILES
-	pconf_files $FILES
-	
-	test -d /srv/tftpbot/upload/ && FILES=$(find /srv/tftpboot/upload/ -type f | grep hwtype ) || unset FILES
-	pconf_files $FILES /srv/tftpboot/boot/pxelinux.cfg /var/lib/dhcp/db/dhcpd.leases
-else
-	plugin_message "# Not Installed"
-	plugin_message
+# POS related files 
+# xorg files are sometimes needed in addition because the original 
+# supportconfig will not capture these infos without finding xorg RPMs.
+if [ -f "$BUSYBOX" ]; then
+    plugin_tag "Command" "ls -la /dev/input/*" 
+       /bin/ls -al /dev/input/*
+    plugin_message
+    test -f /etc/sysconfig/displaymanager && pconf_files /etc/sysconfig/displaymanager
+    test -f /etc/sysconfig/windowmanager && pconf_files /etc/sysconfig/windowmanager
+    test -f /etc/X11/xorg.conf && pconf_files /etc/X11/xorg.conf
+    test -f /var/log/Xorg.0.log && plog_files 600 /var/log/Xorg.0.log
 fi
 
-# Imageserver
-section_header "SLEPOS: Image Server"
-if rpm -q POS_Image3 &>/dev/null; then
+# adminserver.conf and branchserver.conf without passwd
+test -f "$ADMINSERVERCONF" && plugin_command "sed $ADMINSERVERCONF -e '/^[[:space:]]*#/d' -e '/^$/d' -e 's/POS_ADMIN_PASSWORD.*/POS_ADMIN_PASSWORD=REMOVED/g'" 
+test -f "$BRANCHSERVERCONF" && plugin_command "sed $BRANCHSERVERCONF -e '/^[[:space:]]*#/d' -e '/^$/d' -e 's/POS_ADMIN_PASSWORD.*/POS_ADMIN_PASSWORD=REMOVED/g;s/LEASES2LDAP_ADMIN_PW.*/LEASES2LDAP_ADMIN_PW=REMOVED/g' "
 
-        test -d /usr/share/kiwi/image/SLEPOS/ && \
-	for DIR in $(find . /usr/share/kiwi/image/SLEPOS/ -maxdepth 0| grep -v "\." ); do plugin_command "ls -la $DIR"; done
+# All files from finction configFiles()
+for FILE in $(configFiles); do 
+	readASCIIFiles $FILE
+done
 
-	FILES=$(find /var/lib/SLEPOS/system/ -maxdepth 1 -type d | grep -v /var/lib/SLEPOS/system/chroot | grep -v /var/lib/SLEPOS/system/images | grep -v "system\/$") || unset FILES
-	test -n "$FILES" && for DIR in $FILES; do plugin_command "ls -la $DIR"; done
+# Logfiles
+plog_files $LOG_LINES /var/log/slepos 
 
-	FILES=$(find /var/lib/SLEPOS/system/ -regex ".*/\(config\.sh\|config\.xml\|images\.sh\)") || unset FILES
-	pconf_files $FILES
+# LDAP output without passwd
+test -d /var/lib/ldap && plugin_command "slapcat -d 0 | sed -e 's/userPassword::.*/userPassword:: REMOVED/g'" 
 
-else
-	plugin_message "# Not Installed"
-	plugin_message
-fi
+# LDAP XML output without passwd
+plugin_command "posAdmin --export --type XML | sed -e 's/<userPassword.*/<userPassword>REMOVED<\/userPassword>/g'"
+
 section_header Done
+
+exit 0
+
+
