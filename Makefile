@@ -78,6 +78,17 @@ buildci: allclean install
 	@ls -al ${LS_OPTIONS}
 	@echo
 	
+obsetup:
+	@echo ==================================================================
+	@echo Setup OBS Novell:NTS/$(OBSPACKAGE)
+	@echo ==================================================================
+	@rm -rf Novell:NTS
+	osc co Novell:NTS/$(OBSPACKAGE)
+	@rm -f Novell:NTS/$(OBSPACKAGE)/*
+	cp specs/$(OBSPACKAGE).spec Novell:NTS/$(OBSPACKAGE)
+	cp src/$(SRCFILE).gz Novell:NTS/$(OBSPACKAGE)
+	osc status Novell:NTS/$(OBSPACKAGE)
+
 commit: build
 	@echo ==================================================================
 	@echo Committing changes to OBS Novell:NTS/$(OBSPACKAGE)
@@ -100,5 +111,5 @@ help:
 	@make -v
 	@echo
 	@echo Make options for package: $(OBSPACKAGE)
-	@echo make {install, uninstall, dist, clean, allclean, build[default], buildci, commit}
+	@echo make {install, uninstall, dist, clean, allclean, build[default], obsetup, buildci, commit}
 	@echo
